@@ -1,0 +1,40 @@
+runtime: nodejs12
+
+# Set static file handlers cache period
+default_expiration: 600s
+
+instance_class: F1
+
+automatic_scaling:
+  # One instance to control costs
+  max_instances: 1
+  # Maintain a resident instance to avoid startup latency
+  min_idle_instances: 1
+
+# Start instances before requests sent
+inbound_services:
+- warmup
+
+# Set up a static file handler
+handlers:
+
+# Serve index.html for www.xxx.xxx/
+- url: /
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/index.html
+  upload: dist/index.html
+# Serve the static files
+- url: /(.*)
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/\1
+  # Ensures not founds are passed to the next handler
+  require_matching_file: true
+  upload: dist/.*
+# Serve index.html for all remaining i.e. not found
+- url: /.*
+  secure: always
+  redirect_http_response_code: 301
+  static_files: dist/index.html
+  upload:  dist/index.html

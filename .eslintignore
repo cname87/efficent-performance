@@ -1,0 +1,8 @@
+# don't lint the following:
+.nyc_output
+.vscode
+.eslintrc.js
+coverage
+node_modules
+frontend
+dist

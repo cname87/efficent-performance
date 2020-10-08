@@ -1,0 +1,229 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "presentation": {
+    "panel": "dedicated"
+  },
+  "windows": {
+    "options": {
+      "shell": {
+        "executable": "cmd.exe",
+        "args": [
+            "/d", "/c"
+        ]
+      }
+    }
+  },
+  "inputs": [
+    {
+      "id": "terminate",
+      "type": "command",
+      "command": "workbench.action.tasks.terminate",
+      "args": "terminateAll"
+    }
+  ],
+  "tasks": [
+    /* Build development frontend */
+    {
+      "label": "npm build:dev frontend",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "--prefix",
+        "${workspaceFolder}/",
+        "build:dev"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Compiled successfully."
+          }
+        }
+      }
+    },
+    /* Build production frontend */
+    {
+      "label": "npm build:prod frontend",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "--prefix",
+        "${workspaceFolder}/",
+        "build:prod"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Compiled | Failed to compile."
+          }
+        }
+      }
+    },
+    /* Serve frontend */
+    {
+      "label": "npm serve:dev",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "--prefix",
+        "${workspaceFolder}/",
+        "serve:dev"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Compiled | Failed to compile."
+          }
+        }
+      }
+    },
+    /* Test frontend */
+    {
+      "label": "Test Frontend",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "--prefix",
+        "${workspaceFolder}/",
+        "test:dev"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "TOTAL:"
+          }
+        }
+      }
+    },
+    /* Run e2e test */
+    {
+      "label": "npm build:e2e frontend",
+      "type": "shell",
+      "command": "npm",
+      "args": [
+        "run",
+        "--prefix",
+        "${workspaceFolder}/",
+        "build:e2e"
+      ],
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "typescript",
+        "source": "ts",
+        "applyTo": "closedDocuments",
+        "fileLocation": [
+          "relative",
+          "${cwd}"
+        ],
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "(.*?)"
+          },
+          "endsPattern": {
+            "regexp": "Compiled | Failed to compile."
+          }
+        }
+      }
+    },
+    /* Kill all node.exe tasks */
+    {
+      "label": "Taskkill node.exe",
+      "type": "shell",
+      "windows": {
+        "command": "TASKKILL",
+        "args": [
+          "/IM",
+          "node.exe",
+          "/F"
+        ]
+      },
+      "linux": {
+        "command": "killall",
+        "args": [
+          "node"
+        ]
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": true,
+        "clear": true
+      },
+      "group": "test",
+      "problemMatcher": []
+    },
+    /* Terminate all tasks */
+    {
+      "label": "Terminate All Tasks",
+      "command": "echo ${input:terminate}",
+      "type": "shell",
+      "problemMatcher": []
+    }
+  ],
+}

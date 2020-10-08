@@ -1,0 +1,185 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+
+    // Serve frontend - use for frontend debug with watch
+    {
+      /*
+      For debug, you may need to use Chrome DevTools sources to put in the first breakpoint, which should then sync with VSCode.
+      Close all open Chrome instances if Chrome won't start. */
+      "name": "Serve frontend",
+      "type": "chrome",
+      "preLaunchTask": "npm serve:dev",
+      "postDebugTask": "Taskkill node.exe",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/",
+      "url": "http://localhost:4200/", // proxy to 8080 for api calls
+      "webRoot": "${workspaceFolder}/dist",
+      "pathMapping": {
+        "/": "${workspaceFolder}/dist/",
+      },
+      "sourceMapPathOverrides": {
+        "webpack:///./*":   "${workspaceFolder}/*",
+      },
+    },
+    // Test frontend- use for frontend unit test debug with watch
+    {
+      /*
+      Runs 'Test Frontend' task first, i.e. 'ng test:dev', which compiles and serves the front end and opens Chrome and connects to the Karma runner and runs the unit tests.  Once this task exits without error, following the test run, it THEN starts Chrome again and connects to the Karma runner for a second test run.  Debug should work on the second session.
+      You may need to use Chrome DevTools sources to put in the first breakpoint.
+      Run the preLaunch task manually first if problems.
+      Close all open Chrome instances if Chrome won't start.
+       */
+      "name": "Test frontend",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "Test Frontend",
+      "linux": {
+        "runtimeExecutable": "/usr/bin/google-chrome",
+      },
+      "windows": {
+        "runtimeExecutable": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      },
+      "runtimeArgs": [
+        "--remote-debugging-port=9222",
+        "--incognito",
+        "--new-window",
+        "--start-maximized",
+        "--disable-popup-blocking", // necessary for window.open() to work
+      ],
+      "cwd": "${workspaceFolder}/frontend",
+      "userDataDir":true,
+      "url": "http://localhost:9876/debug.html",
+      "webRoot": "${workspaceFolder}/dist/",
+      "pathMapping": {
+        "/": "${workspaceFolder}/dist/",
+      },
+      "sourceMapPathOverrides": {
+        "webpack:///./*":   "${workspaceFolder}/*",
+      },
+      "sourceMaps": true,
+      "smartStep": true,
+      "disableNetworkCache": true,
+      "showAsyncStacks": true,
+      "breakOnLoad": true,
+      "breakOnLoadStrategy": "instrument",
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "${workspaceFolder}/node_modules/**/*",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+    },
+    // e2e frontend - use for frontend e2e test debug
+    {
+      /**
+      Starts the server and runs e2e tests against it allowing VSCode debug of the e2e .spec files. (Use Chrome DevTools if browser-side debug is needed)
+      NOTE: Protractor uses a configured baseUrl to point all url requests to a host.
+      *** NOTE: This does NOT pre-compile the backend like ng e2e - the already-compiled front-end is used.  Thus the front end must be compiled using the e2e enviroment file if you want to run the cache or error test files (which rely on e2e environment settings) - run the npm script or the VSCode task that compiles with the e2e environment file.
+      Choose .dev or .production configuration by editing args below - edit the .env files to select which spec files to run.
+      VALID OPTIONS:
+      - Compile ngBuild:e2e (which allows error and cache testing) and choose -dev conf file (which is configured to test against a local server and test cache and error testing).
+      - Compile ngBuild:prod and choose -production conf file (which is configured to test against the GCP server and skip cache and error testing).  (You can use the other two compile types with this conf file without error).
+      - Compile ngBuild:staging and choose -staging conf file (which is configured to test against a local server and skip cache and error testing). (You can use the other two compile types with this conf file without error).
+      NOTE: You can run this against a deployed build by setting the BASE_URL below.
+      */
+      "name": "E2e frontend with backend",
+      "type": "node",
+      "request": "launch",
+      "postDebugTask": "Taskkill node.exe",
+      "program": "${workspaceFolder}/frontend//node_modules/protractor/bin/protractor",
+      "protocol": "inspector",
+      "args": [
+        /* Edit here to choose one of either -dev or -production configuration file . */
+        "${workspaceFolder}/frontend/e2e/src/config/protractor-dev.conf.js",
+        // "${workspaceFolder}/frontend/e2e/src/config/protractor-staging.conf.js",
+        // "${workspaceFolder}/frontend/e2e/src/config/protractor-production.conf.js",
+      ],
+      "env": {
+        /* can set the base-url to a specific deployed build */
+        "BASE_URL": "http://localhost:8080"
+        // "BASE_URL": "https://ci-test-dot-project-perform.appspot.com"
+      },
+      "cwd": "${workspaceFolder}/",
+      "outputCapture": "std",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "${workspaceFolder}/node_modules/**/*",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+    },
+    // https://localhost:8080/
+    {
+      /* Starts Chrome and connects to the home page. */
+      "name": "Open http://localhost:8080/",
+      "type": "chrome",
+      "postDebugTask": "Taskkill node.exe",
+      "request": "launch",
+      "linux": {
+        "runtimeExecutable": "/usr/bin/google-chrome",
+      },
+      "windows": {
+        "runtimeExecutable": "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+      },
+      "runtimeArgs": [
+        "--incognito",
+        "--start-maximized",
+        "--new-window",
+        "--disable-popup-blocking", // necessary for window.open() to work
+      ],
+      "userDataDir": true,
+      "url": "http://localhost:8080/",
+      // tell vscode where to find scripts on the server
+      "webRoot": "${workspaceFolder}/dist",
+      "pathMapping": {
+        "/": "${workspaceFolder}/dist/",
+      },
+      "sourceMapPathOverrides": {
+        "webpack:///./*": "${workspaceFolder}/*",
+      },
+      "smartStep": false,
+      "disableNetworkCache": true,
+      "showAsyncStacks": true,
+      "sourceMaps": true,
+    },
+    // Run current .js file
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run the currently opened .js file",
+      "program": "${file}",
+      "outputCapture": "std",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "${workspaceFolder}/node_modules/**/*",
+        "${workspaceFolder}/node_modules/**/*.js",
+      ],
+    },
+    // Run current .ts file
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run the currently opened .ts file",
+      "cwd": "${workspaceFolder}",
+      "outputCapture": "std",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "runtimeArgs": [
+          "-r",
+          "ts-node/register"
+      ],
+      "args": [
+          "${file}",
+      ],
+      "env": {
+        "TS_NODE_PROJECT": "tsconfig.json",
+      },
+    },
+  ],
+}

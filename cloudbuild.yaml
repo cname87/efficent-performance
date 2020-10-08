@@ -1,0 +1,96 @@
+steps:
+
+ # When a build is executed from GCP via a github trigger the secret files, (and any empty directories), are not there => download secrets from GCP Storage.  The structure of the storage bucket MUST match the expected destination of the files including directory structure as a recursive copy is carried out to copy the directory structure and files.
+- id: 'Download environment files'
+# Copy frontend e2e .env, & GCP Storage key file from GCP Storage to the persisted workspace
+  name: 'gcr.io/cloud-builders/gsutil'
+  dir: '.'
+  args: [
+    '-m', 'cp', '-r', '-n',
+    'gs://efficient-performance-gcp-environment-files/*',
+    './',
+  ]
+
+- id: 'Install frontend node_modules'
+# Install the frontend node_modules directory in the persisted workspace
+# node 12 supported as at 7-Oct-20
+  name: node:12
+  entrypoint: npm
+  dir: './'
+  args: ['install']
+
+# - id: 'Build frontend'
+# # Build the frontend in the persisted workspace (replacing the copied in dist files - the built files are deployed)
+#   name: node:12
+#   entrypoint: npm
+#   dir: './'
+#   args: ['run', 'build:prod']
+
+
+# - id: 'Unit test frontend'
+# # run all frontend unit tests
+# # must use an image with node & puppeteer
+#   name: 'gcr.io/$PROJECT_ID/node-with-puppeteer'
+#   dir: './'
+#   args: ['npm', 'run', 'test:staging']
+
+# - id: 'e2e test in build environment'
+# # run e2e using e2e:staging => runs a fresh compile with the environment.e2e file => e2e environment parameters available
+#   name: 'gcr.io/$PROJECT_ID/node-with-puppeteer'
+#   dir: './'
+#   args: ['npm', 'run', 'e2e:staging']
+
+- id: 'Deploy build for e2e test'
+# Deploys a test version using the frontend that is built above
+# Production build (=> e2e environment parameters not set)
+  name: 'gcr.io/cloud-builders/gcloud'
+  args: [
+    'app',
+    'deploy',
+    '--no-promote',
+    '--version=ci-test',
+  ]
+  timeout: '600s'
+
+- id: 'e2e test the test build'
+# Runs e2e test against the newly deployed test build
+# Does not use ng e2e => frontend production build from image => e2e environment parameters not available => no cache or errors test
+  name: 'gcr.io/$PROJECT_ID/node-with-puppeteer'
+  dir: './'
+  env: ['BASE_URL=https://ci-test-dot-$PROJECT_ID.appspot.com']
+  args: ['npm', 'run', 'e2e:prod']
+
+- id: 'Deploy build for go-live but no-promote'
+# Deploys using the frontend that is built
+# Production build (=> e2e environment parameters not set)
+  name: 'gcr.io/cloud-builders/gcloud'
+  args: [
+    'app',
+    'deploy',
+    '--no-promote',
+    '--version=ci-live-$SHORT_SHA',
+  ]
+  timeout: '600s'
+
+- id: 'Promote go-live build'
+# Promotes the newly deployed build so it takes all traffic
+  name: 'gcr.io/cloud-builders/gcloud'
+  args: [
+    'app',
+    'versions',
+    'migrate',
+    'ci-live-$SHORT_SHA',
+  ]
+  timeout: '600s'
+
+- id: 'e2e test the promoted go-live build'
+# Runs e2e test against the newly promoted build
+# does not use ng e2e => frontend production build from image => e2e environment parameters not available => no cache or errors test
+  name: 'gcr.io/$PROJECT_ID/node-with-puppeteer'
+  dir: './'
+  args: ['npm', 'run', 'e2e:prod']
+
+options:
+  machineType: 'N1_HIGHCPU_32'
+
+timeout: 1800s
